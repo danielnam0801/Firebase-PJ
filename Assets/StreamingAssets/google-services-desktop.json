@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "693693472734",
+    "firebase_url": "https://network-multi-default-rtdb.firebaseio.com",
+    "project_id": "network-multi",
+    "storage_bucket": "network-multi.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693693472734:android:55049dfd6c8aa5de7d474f",
+        "android_client_info": {
+          "package_name": "com.company.FirebasePJ"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKGPEkT5irJRJ6L4ZuCPpf5UqE9JPZNAk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
