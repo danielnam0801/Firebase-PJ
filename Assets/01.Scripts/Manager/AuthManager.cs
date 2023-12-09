@@ -4,6 +4,7 @@ using Firebase.Database;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using TMPro;
 using UnityEngine;
@@ -39,6 +40,12 @@ public class AuthManager : Singleton<AuthManager>
     public TMP_InputField emailPasswordField;
     public TMP_InputField changePasswordField;
     public TMP_InputField changeNewPasswordField;
+
+    [Header("Friend")]
+    [SerializeField] GameObject friendElement;
+    [SerializeField] GameObject recommendElement;
+    [SerializeField] Transform friendContent;
+    [SerializeField] Transform recommandContent;
 
 
     private string strWeather;
@@ -76,7 +83,7 @@ public class AuthManager : Singleton<AuthManager>
         });
     }
 
-    private void InitReward()
+    private void Init()
     {
         DBref.Child("users").Child(User.UserId).Child("TotalConnectDay").GetValueAsync().ContinueWith((task) =>
         {
@@ -110,6 +117,18 @@ public class AuthManager : Singleton<AuthManager>
                     seqConnectDay = 0;
                 }
                 rewardInit++;
+            }
+        });
+
+        DBref.Child("users").Child(User.UserId).Child("Friends").GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsCompleted)
+            {
+                DataSnapshot snapShot = task.Result;
+                if (snapShot != null && snapShot.Value != null)
+                {
+                    friendAll = snapShot.Value.ToString();
+                }
             }
         });
     }
@@ -233,13 +252,14 @@ public class AuthManager : Singleton<AuthManager>
             //warningTextobj.SetActive(false);
             User = task.Result.User;
             Debug.Log($"User Signed in Successfully: {User.Email}, {User.DisplayName}");
-            InitReward();
+            Init();
             //값 변경될 때 마다 이벤트 호출
             //DBref.Child("users").Child(User.UserId).Child("LastLogin").ValueChanged += LoadLastLogin;
             UIManager.Instance.CloseLogin();
             StartCoroutine(LoadUserName());
             StartCoroutine(LoadWeather());
             StartCoroutine(SaveLoginData());
+            StartCoroutine(SetUsers());
         }
     }
 
@@ -493,4 +513,92 @@ public class AuthManager : Singleton<AuthManager>
         warningRegisterText.text = error;
     }
 
+    public void SetUsersFunc()
+    {
+        StartCoroutine(SetUsers());
+    }
+
+    public IEnumerator SetUsers()
+    {
+        var task = DBref.Child("users").GetValueAsync();
+        yield return new WaitUntil(predicate: ()=> task.IsCompleted);
+        if (task.Exception != null)
+        {
+            Debug.LogWarning($"Failed to register task with {task.Exception}");
+        }
+        else
+        {
+            DataSnapshot snapShot = task.Result;
+
+            foreach (Transform child in friendContent.transform)
+            {
+                Destroy(child.gameObject);
+            } foreach (Transform child in recommandContent.transform)
+            {
+                Destroy(child.gameObject);
+            }
+
+            List<string> friends = new List<string>();
+
+
+            DataSnapshot friendsSnapShot = snapShot.Child(User.UserId).Child("Friends");
+
+            if (friendsSnapShot != null && friendsSnapShot.Value != null)
+            {
+                string friendsStr = friendsSnapShot.Value.ToString();
+                friends = friendsStr.Split(",").ToList();
+                friends.Remove("");
+            }
+
+            foreach(DataSnapshot childSnapShot in snapShot.Children)
+            {
+                string username = childSnapShot.Child("UserName").Value.ToString();
+
+                GameObject friend;
+                if (friends.Contains(username))
+                {
+                    friend = Instantiate(friendElement, friendContent);
+                }
+                else
+                {
+                    friend = Instantiate(recommendElement, recommandContent);
+                }
+                friend.transform.Find("NickName").GetComponent<TextMeshProUGUI>().text = username;
+            }
+        }
+    }
+    string friendAll = string.Empty;
+    public void AddFriend(Transform transform)
+    {
+        string friend = transform.Find("NickName").GetComponent<TextMeshProUGUI>().text;
+        friendAll += friend + ',';
+       
+        DBref.Child("users").Child(User.UserId).Child("Friends").SetValueAsync(friendAll).ContinueWith((task) =>
+        {
+            if(task.IsCompleted)
+            {
+                transform.SetParent(friendContent);
+            }
+        });
+    }
+
+    public void RemoveFriends(Transform transform)
+    {
+        //string friend = string.Empty;
+        //DBref.Child("users").Child(User.UserId).Child("Friends").GetValueAsync().ContinueWith(task =>
+        //{
+        //    if (task.IsCompleted)
+        //    {
+        //        if (task.Result != null && task.Result.Value != null)
+        //            friend = task.Result.Value.ToString() + name + ",";
+        //    }
+        //});
+        //DBref.Child("users").Child(User.UserId).Child("Friends").SetValueAsync(friend).ContinueWith((task) =>
+        //{
+        //    if (task.IsCompleted)
+        //    {
+        //        SetUsers();
+        //    }
+        //});
+    }
 }
