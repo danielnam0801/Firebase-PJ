@@ -543,6 +543,7 @@ public class AuthManager : Singleton<AuthManager>
 
             DataSnapshot friendsSnapShot = snapShot.Child(User.UserId).Child("Friends");
 
+
             if (friendsSnapShot != null && friendsSnapShot.Value != null)
             {
                 string friendsStr = friendsSnapShot.Value.ToString();
