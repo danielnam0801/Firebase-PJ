@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 using System;
+using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -287,6 +288,11 @@ public class GameManager : Singleton<GameManager>
                 }
             }
         }
+    }
+
+    public void StartGame()
+    {
+        SceneManager.LoadScene("GameScene");
     }
 
 
