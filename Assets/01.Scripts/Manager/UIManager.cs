@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class UIManager : Singleton<UIManager>
@@ -11,6 +13,7 @@ public class UIManager : Singleton<UIManager>
     public GameObject weekRewardPanel;
     public GameObject user;
     public GameObject FirebaseEvent;
+    public GameObject LoginReward;
 
     public void LoginPanelwithName()
     {
@@ -33,6 +36,12 @@ public class UIManager : Singleton<UIManager>
         registerUI.SetActive(true);
     }
 
+    public void ADDMessage(int developerCoin)
+    {
+        LoginReward.SetActive(true);
+        LoginReward.transform.Find("Get").GetComponentInChildren<TextMeshProUGUI>().text = developerCoin.ToString();
+    }
+
     public void CloseLogin()
     {
         changePassword.SetActive(false);
@@ -50,6 +59,6 @@ public class UIManager : Singleton<UIManager>
     
     public void StartGame()
     {
-        //FirebaseEvent?.SetActive(true);
+        FirebaseEvent?.SetActive(true);
     }
 }

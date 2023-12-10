@@ -26,6 +26,8 @@ public class AuthManager : Singleton<AuthManager>
 
     [Header("Login")]
     public TMP_Text warningLoginText;
+
+
     public TMP_Text userNameText;
 
     [Header("Register")]
@@ -48,7 +50,6 @@ public class AuthManager : Singleton<AuthManager>
     [SerializeField] Transform recommandContent;
 
 
-    private string strWeather;
     private string strLastLogin;
     public string StrLastLogin => strLastLogin;
 
@@ -59,6 +60,23 @@ public class AuthManager : Singleton<AuthManager>
     public int SeqConnectDay => seqConnectDay;
 
     private int rewardInit = 0; // == 2  successful init;
+
+    //StaticEvent
+    private int developerCoin;
+    private string strWeather;
+
+    private int staticEventLoadDone = 0;
+    private int staticEventSize = 2;
+
+    public int GetDeveloperCoin()
+    {
+        return developerCoin;
+    }
+    public string GetWeather()
+    {
+        return strWeather;
+    }
+
 
     private void Awake()
     {
@@ -257,9 +275,9 @@ public class AuthManager : Singleton<AuthManager>
             //DBref.Child("users").Child(User.UserId).Child("LastLogin").ValueChanged += LoadLastLogin;
             UIManager.Instance.CloseLogin();
             StartCoroutine(LoadUserName());
-            StartCoroutine(LoadWeather());
             StartCoroutine(SaveLoginData());
             StartCoroutine(SetUsers());
+            StartCoroutine(LoadStaticEvent());
         }
     }
 
@@ -443,7 +461,37 @@ public class AuthManager : Singleton<AuthManager>
         }
     }
 
-    public IEnumerator LoadWeather()
+    public IEnumerator LoadStaticEvent()
+    {
+        StartCoroutine(LoadWeather());
+        StartCoroutine(LoadDeveloperGift());
+        yield return new WaitUntil(() => staticEventSize == staticEventLoadDone);
+
+        UIManager.Instance.StartGame();
+    }
+
+    private IEnumerator LoadDeveloperGift()
+    {
+        var DBTask = DBref.Child("DeveloperGift").GetValueAsync();
+        yield return new WaitUntil(() => DBTask.IsCompleted);
+        if (DBTask.Exception != null)
+        {
+            Debug.LogWarning($"Load Task failed with {DBTask.Exception}");
+        }
+        else
+        {
+            DataSnapshot snapshot = DBTask.Result;
+            if (snapshot != null && snapshot.Value != null)
+            {
+                Debug.Log("Load Completed");
+                developerCoin = int.Parse(snapshot.Value.ToString());
+            }
+        }
+        staticEventLoadDone++;
+        
+    }
+
+    private IEnumerator LoadWeather()
     {
         var DBTask = DBref.Child("Weather").GetValueAsync();
         yield return new WaitUntil(() => DBTask.IsCompleted);
@@ -454,19 +502,15 @@ public class AuthManager : Singleton<AuthManager>
         else
         {
             DataSnapshot snapshot = DBTask.Result;
-            if(snapshot!=null && snapshot.Value != null)
+            if (snapshot != null && snapshot.Value != null)
             {
                 Debug.Log("Load Completed");
                 strWeather = snapshot.Value.ToString();
             }
         }
-        UIManager.Instance.StartGame();
+        staticEventLoadDone++;
     }
 
-    public string GetWeather()
-    {
-        return strWeather;
-    }
 
     //최초 회원가입 사용자 보상 초기화
     private IEnumerator SaveRewardData()

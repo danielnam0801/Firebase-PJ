@@ -12,18 +12,23 @@ public class FirebaseEvent : MonoBehaviour
     void Start()
     {
         //³¯¾¾ ÀÌº¥Æ®
-        string strWeather = AuthManager.Instance.GetWeather();
-        Console.WriteLine(strWeather);
-        switch (strWeather)
-        {
-            case "Snow":
-                particleSnow.SetActive(true);
-                break;
-            case "Rain":
-                particleRain.SetActive(true);
-                break;
-        }
+        //string strWeather = AuthManager.Instance.GetWeather();
+        //Console.WriteLine(strWeather);
+        //switch (strWeather)
+        //{
+        //    case "Snow":
+        //        particleSnow.SetActive(true);
+        //        break;
+        //    case "Rain":
+        //        particleRain.SetActive(true);
+        //        break;
+        //}
 
+        int developerCoin = AuthManager.Instance.GetDeveloperCoin();
+        if (developerCoin == 0)
+            return;
+
+        UIManager.Instance.ADDMessage(developerCoin);
     }
 
     // Update is called once per frame
