@@ -178,10 +178,12 @@ public class AuthManager : Singleton<AuthManager>
         if (userName == "")
         {
             warningRegisterText.text = "Missing Username";
+            warningTextobj.SetActive(true);
         }
         else if (passwordRegisterField.text != passwordCheckRegisterField.text)
         {
             warningRegisterText.text = "Password does not Match!";
+            warningTextobj.SetActive(true);
         }
         else
         {
@@ -364,12 +366,23 @@ public class AuthManager : Singleton<AuthManager>
         yield return new WaitUntil(()=> rewardInit == 2);
         var Task = DBref.Child("users").Child(User.UserId).Child("RewardLogin").GetValueAsync();
         yield return new WaitUntil(()=> Task.IsCompleted);
+        bool canReward;
+        DateTime lastReward = DateTime.Now;
+        DateTime lastLogin = DateTime.Now;
+
         DataSnapshot snapShot = Task.Result;
-        DateTime lastReward = DateTime.ParseExact(snapShot.Value.ToString(), "yyyyMMddHHmmss", null);
-        DateTime lastLogin = DateTime.ParseExact(strLastLogin, "yyyyMMddHHmmss", null);
-        Debug.Log("LastLoginnnnnnnnnn : " + strLastLogin.ToString());
-       // bool canReward = DateTime.Compare(lastLogin, lastReward.AddDays(1)) > 0;
-        bool canReward = DateTime.Compare(lastLogin.AddDays(1), lastReward.AddDays(1)) > 0; //µð¹ö±ë¿ë
+
+        if (snapShot.Value.ToString() == "00000000000000")
+        {
+            canReward = true;
+        }else
+        {
+            lastReward = DateTime.ParseExact(snapShot.Value.ToString(), "yyyyMMddHHmmss", null);
+            lastLogin = DateTime.ParseExact(strLastLogin, "yyyyMMddHHmmss", null);
+            Debug.Log("LastLoginnnnnnnnnn : " + strLastLogin.ToString());
+           // bool canReward = DateTime.Compare(lastLogin, lastReward.AddDays(1)) > 0;
+            canReward = DateTime.Compare(lastLogin.AddDays(1), lastReward.AddDays(1)) > 0; //µð¹ö±ë¿ë
+        }
         // date2 = DateTime.Now.ToString("yyyyMMddHHmmss");
         if(canReward)
         {
